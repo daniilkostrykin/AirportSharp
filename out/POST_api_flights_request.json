@@ -1,0 +1,6 @@
+{
+  "flightNumber": "SU-200",
+  "destination": "Казань",
+  "departureTimeUtc": "2026-06-01T10:00:00Z",
+  "allSeats": ["1A", "1B", "2A", "2B"]
+}

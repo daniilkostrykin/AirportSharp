@@ -1,0 +1,9 @@
+{
+  "id": "f1111111-1111-1111-1111-111111111111",
+  "flightNumber": "SU-200",
+  "destination": "Казань",
+  "departureTimeUtc": "2026-06-01T10:00:00Z",
+  "totalSeats": 4,
+  "availableSeats": 4,
+  "status": "Scheduled"
+}
