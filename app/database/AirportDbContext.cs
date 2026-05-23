@@ -10,6 +10,7 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Airport> Airports { get; set; }
     public DbSet<Gate> Gates { get; set; }
+    public DbSet<Aircraft> Aircrafts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +26,12 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(10).IsRequired();
             entity.HasOne(g => g.Airport).WithMany(a => a.Gates).HasForeignKey(g => g.AirportId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Aircraft>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ModelName).HasMaxLength(100).IsRequired();
         });
 
         modelBuilder.Entity<Flight>(entity =>
@@ -49,6 +56,11 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
                   .WithMany()
                   .HasForeignKey(f => f.DepartureGateId)
                   .OnDelete(DeleteBehavior.SetNull); 
+
+            entity.HasOne(f => f.Aircraft)
+              .WithMany()
+              .HasForeignKey(f => f.AircraftId)
+              .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Passenger>(entity =>

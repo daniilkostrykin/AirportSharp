@@ -56,25 +56,51 @@ if (app.Environment.IsDevelopment())
             db.Gates.AddRange(gate1, gate2, gate3);
 
             
-            var seatsList = new List<string>();
-            for (int row = 1; row <= 5; row++)
+            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "aircrafts.json");
+            var aircraftsJson = await File.ReadAllTextAsync(jsonPath);
+            var aircraftSeedData = System.Text.Json.JsonSerializer.Deserialize<List<AircraftSeedDto>>(aircraftsJson);
+
+            var aircraftDict = new Dictionary<string, Aircraft>();
+            var alphabet = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
+
+            foreach (var dto in aircraftSeedData!)
             {
-                foreach (var letter in new[] { "A", "B", "C", "D", "E", "F" })
+                var seatMap = new List<string>();
+                for (int r = 1; r <= dto.Rows; r++)
                 {
-                    seatsList.Add($"{row}{letter}");
+                    for (int s = 0; s < dto.SeatsPerRow; s++) 
+                    {
+                        seatMap.Add($"{r}{alphabet[s]}");
+                    }
                 }
+
+                var aircraft = new Aircraft 
+                { 
+                    Id = Guid.NewGuid(), 
+                    ModelName = dto.ModelName, 
+                    SeatMap = seatMap.ToArray(), 
+                    TotalSeats = seatMap.Count 
+                };
+                
+                db.Aircrafts.Add(aircraft);
+                aircraftDict[dto.ModelName] = aircraft; 
             }
-            var seats = seatsList.ToArray();
+            await db.SaveChangesAsync();
 
             
+            var ssj = aircraftDict["Sukhoi Superjet 100-95B"];
+            var b777 = aircraftDict["Boeing 777-300ER"];
+            var mc21 = aircraftDict["Irkut MC-21-300"];
+            var b737 = aircraftDict["Boeing 737-800"];
+            var a350 = aircraftDict["Airbus A350-900"];
+
             var flights = new List<Flight>
             {
-                new() { Id = Guid.NewGuid(), FlightNumber = "SU-101", OriginAirportId = svo.Id, DestinationAirportId = kzn.Id, DepartureGateId = gate1.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(1), BasePrice = 5500, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "RT-202", OriginAirportId = svo.Id, DestinationAirportId = vvo.Id, DepartureGateId = gate2.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(2), BasePrice = 25000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "ZX-999", OriginAirportId = svo.Id, DestinationAirportId = ovb.Id, DepartureGateId = gate3.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(3), BasePrice = 12000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "S7-777", OriginAirportId = svo.Id, DestinationAirportId = svx.Id, DepartureGateId = null,       DepartureTimeUtc = DateTime.UtcNow.AddHours(12), BasePrice = 8000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Boarding },
-                
-                new() { Id = Guid.NewGuid(), FlightNumber = "U6-333", OriginAirportId = svx.Id, DestinationAirportId = svo.Id, DepartureGateId = null,       DepartureTimeUtc = DateTime.UtcNow.AddDays(5), BasePrice = 7500, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled }
+                new() { Id = Guid.NewGuid(), FlightNumber = "SU-101", OriginAirportId = svo.Id, DestinationAirportId = kzn.Id, DepartureGateId = gate1.Id, AircraftId = ssj.Id,  DepartureTimeUtc = DateTime.UtcNow.AddDays(1), BasePrice = 5500,  AvailableSeats = ssj.TotalSeats,  Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "RT-202", OriginAirportId = svo.Id, DestinationAirportId = vvo.Id, DepartureGateId = gate2.Id, AircraftId = b777.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(2), BasePrice = 25000, AvailableSeats = b777.TotalSeats, Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "ZX-999", OriginAirportId = svo.Id, DestinationAirportId = ovb.Id, DepartureGateId = gate3.Id, AircraftId = mc21.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(3), BasePrice = 12000, AvailableSeats = mc21.TotalSeats, Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "S7-777", OriginAirportId = svo.Id, DestinationAirportId = svx.Id, DepartureGateId = gate1.Id, AircraftId = b737.Id, DepartureTimeUtc = DateTime.UtcNow.AddHours(12), BasePrice = 8000, AvailableSeats = b737.TotalSeats, Status = FlightStatus.Boarding }, 
+                new() { Id = Guid.NewGuid(), FlightNumber = "U6-333", OriginAirportId = svx.Id, DestinationAirportId = svo.Id, DepartureGateId = gate3.Id, AircraftId = a350.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(5), BasePrice = 7500,  AvailableSeats = a350.TotalSeats, Status = FlightStatus.Scheduled }
             };
             db.Flights.AddRange(flights);
 
@@ -114,3 +140,11 @@ api.MapCheckInEndpoints();
 app.MapGet("/", () => Results.Ok(new { message = "Аэропорт работает! Перейдите на /swagger" }));
 
 await app.RunAsync();
+
+
+public class AircraftSeedDto
+{
+    public string ModelName { get; set; } = string.Empty;
+    public int Rows { get; set; }
+    public int SeatsPerRow { get; set; }
+}

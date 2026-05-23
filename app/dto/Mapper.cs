@@ -15,9 +15,10 @@ public class Mapper : IMapper
         Origin: flight.OriginAirport != null ? $"{flight.OriginAirport.IataCode} ({flight.OriginAirport.City})" : "Unknown",
         Destination: flight.DestinationAirport != null ? $"{flight.DestinationAirport.IataCode} ({flight.DestinationAirport.City})" : "Unknown",
         Gate: flight.DepartureGate?.Name, 
+        AircraftModel: flight.Aircraft?.ModelName ?? "Unknown",
         flight.DepartureTimeUtc, 
         flight.BasePrice, 
-        flight.TotalSeats, 
+        TotalSeats: flight.Aircraft?.TotalSeats ?? 0, 
         flight.AvailableSeats, 
         flight.Status.ToString()
     );

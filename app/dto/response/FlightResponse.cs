@@ -16,6 +16,7 @@ public record FlightResponse(
     string Origin,       
     string Destination,  
     string? Gate,     
+    string AircraftModel,
     DateTime DepartureTimeUtc, 
     decimal BasePrice, 
     int TotalSeats, 

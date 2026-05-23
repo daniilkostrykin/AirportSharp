@@ -2,9 +2,9 @@ namespace RutAirport.dto.request;
 
 public record CreateFlightRequest(
     string FlightNumber, 
-    Guid OriginAirportId,
+    Guid OriginAirportId,      
     Guid DestinationAirportId, 
+    Guid AircraftId,           
     DateTime DepartureTimeUtc, 
-    decimal BasePrice,
-    string[] AllSeats 
+    decimal BasePrice
 );

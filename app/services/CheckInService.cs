@@ -17,7 +17,13 @@ public class CheckInService(AirportDbContext db) : ICheckInService
         if (ticket == null) throw new ArgumentException("Билет не найден.");
         if (ticket.SeatNumber != null) throw new InvalidOperationException("Вы уже прошли регистрацию.");
 
-        var flight = await db.Flights.FindAsync(ticket.FlightId);
+        var flight = await db.Flights
+            .Include(f => f.Aircraft) 
+            .FirstOrDefaultAsync(f => f.Id == ticket.FlightId); 
+
+        if (flight == null) 
+            throw new ArgumentException("Рейс не найден.");
+            
         var passenger = await db.Passengers.FindAsync(ticket.PassengerId);
         
         string targetSeat = request.SeatNumber ?? string.Empty;
@@ -29,8 +35,7 @@ public class CheckInService(AirportDbContext db) : ICheckInService
 
         if (string.IsNullOrWhiteSpace(targetSeat))
         {
-            targetSeat = flight.AllSeats.FirstOrDefault(s => !takenSeats.Contains(s))!;
-
+            targetSeat = flight.Aircraft!.SeatMap.FirstOrDefault(s => !takenSeats.Contains(s))!;
             if (targetSeat == null)
             {
                 if (!passenger.IsVip)
@@ -56,7 +61,7 @@ public class CheckInService(AirportDbContext db) : ICheckInService
         }
         else
         {
-            if (!flight.AllSeats.Contains(targetSeat))
+            if (!flight.Aircraft!.SeatMap.Contains(targetSeat))
                 throw new ArgumentException("Такого места нет в самолете.");
 
             var existingTicket = await db.Tickets.FirstOrDefaultAsync(t => t.FlightId == flight.Id && t.SeatNumber == targetSeat);

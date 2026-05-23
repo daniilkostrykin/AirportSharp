@@ -1,0 +1,22 @@
+[
+  { "ModelName": "Sukhoi Superjet 100-95B", "Rows": 18, "SeatsPerRow": 5 },
+  { "ModelName": "Irkut MC-21-300", "Rows": 27, "SeatsPerRow": 6 },
+  { "ModelName": "Airbus A320-200", "Rows": 25, "SeatsPerRow": 6 },
+  { "ModelName": "Airbus A321neo", "Rows": 32, "SeatsPerRow": 6 },
+  { "ModelName": "Airbus A330-300", "Rows": 33, "SeatsPerRow": 8 },
+  { "ModelName": "Airbus A350-900", "Rows": 35, "SeatsPerRow": 9 },
+  { "ModelName": "Airbus A380-800", "Rows": 55, "SeatsPerRow": 10 },
+  { "ModelName": "Boeing 737-800", "Rows": 28, "SeatsPerRow": 6 },
+  { "ModelName": "Boeing 737-900ER", "Rows": 32, "SeatsPerRow": 6 },
+  { "ModelName": "Boeing 747-8I", "Rows": 47, "SeatsPerRow": 10 },
+  { "ModelName": "Boeing 757-200", "Rows": 39, "SeatsPerRow": 6 },
+  { "ModelName": "Boeing 767-300ER", "Rows": 30, "SeatsPerRow": 7 },
+  { "ModelName": "Boeing 777-200ER", "Rows": 35, "SeatsPerRow": 9 },
+  { "ModelName": "Boeing 777-300ER", "Rows": 40, "SeatsPerRow": 10 },
+  { "ModelName": "Boeing 787-8 Dreamliner", "Rows": 27, "SeatsPerRow": 9 },
+  { "ModelName": "Boeing 787-9 Dreamliner", "Rows": 32, "SeatsPerRow": 9 },
+  { "ModelName": "Bombardier CRJ200", "Rows": 13, "SeatsPerRow": 4 },
+  { "ModelName": "Embraer E190", "Rows": 25, "SeatsPerRow": 4 },
+  { "ModelName": "Embraer E195-E2", "Rows": 30, "SeatsPerRow": 4 },
+  { "ModelName": "Tupolev Tu-214", "Rows": 35, "SeatsPerRow": 6 }
+]
