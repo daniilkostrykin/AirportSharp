@@ -13,9 +13,9 @@ namespace RutAirport.dto.response;
 public record FlightResponse(
     Guid Id, 
     string FlightNumber, 
-    string OriginCountry,     
-    string DestinationCountry, 
-    string Destination, 
+    string Origin,       
+    string Destination,  
+    string? Gate,     
     DateTime DepartureTimeUtc, 
     decimal BasePrice, 
     int TotalSeats, 

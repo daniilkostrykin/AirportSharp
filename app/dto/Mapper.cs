@@ -12,16 +12,15 @@ public class Mapper : IMapper
     public FlightResponse Map(Flight flight) => new(
         flight.Id, 
         flight.FlightNumber, 
-        flight.OriginCountry,
-        flight.DestinationCountry,
-        flight.Destination, 
+        Origin: flight.OriginAirport != null ? $"{flight.OriginAirport.IataCode} ({flight.OriginAirport.City})" : "Unknown",
+        Destination: flight.DestinationAirport != null ? $"{flight.DestinationAirport.IataCode} ({flight.DestinationAirport.City})" : "Unknown",
+        Gate: flight.DepartureGate?.Name, 
         flight.DepartureTimeUtc, 
-        flight.BasePrice,
+        flight.BasePrice, 
         flight.TotalSeats, 
         flight.AvailableSeats, 
         flight.Status.ToString()
     );
-
     public PassengerResponse Map(Passenger passenger) => new(
         passenger.Id, 
         passenger.FullName, 

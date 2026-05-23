@@ -22,4 +22,6 @@ public interface IFlightService
     /// Изменить текущий статус рейса.
     /// </summary>
     Task<Flight?> ChangeStatusAsync(Guid id, FlightStatus newStatus);
+
+    Task<Flight?> GetByIdAsync(Guid id);
 }

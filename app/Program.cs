@@ -37,8 +37,25 @@ if (app.Environment.IsDevelopment())
         var db = scope.ServiceProvider.GetRequiredService<AirportDbContext>();
         await db.Database.EnsureCreatedAsync(); 
 
-        if (!db.Flights.Any()) 
+        
+        if (!db.Airports.Any()) 
         {
+            
+            var svo = new Airport { Id = Guid.NewGuid(), IataCode = "SVO", Name = "Шереметьево", City = "Москва", Country = "Россия", TimeZone = "Europe/Moscow" };
+            var kzn = new Airport { Id = Guid.NewGuid(), IataCode = "KZN", Name = "Казань", City = "Казань", Country = "Россия", TimeZone = "Europe/Moscow" };
+            var vvo = new Airport { Id = Guid.NewGuid(), IataCode = "VVO", Name = "Кневичи", City = "Владивосток", Country = "Россия", TimeZone = "Asia/Vladivostok" };
+            var ovb = new Airport { Id = Guid.NewGuid(), IataCode = "OVB", Name = "Толмачево", City = "Новосибирск", Country = "Россия", TimeZone = "Asia/Novosibirsk" };
+            var svx = new Airport { Id = Guid.NewGuid(), IataCode = "SVX", Name = "Кольцово", City = "Екатеринбург", Country = "Россия", TimeZone = "Asia/Yekaterinburg" };
+            
+            db.Airports.AddRange(svo, kzn, vvo, ovb, svx);
+
+            
+            var gate1 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "14A" };
+            var gate2 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "14B" };
+            var gate3 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "15" };
+            db.Gates.AddRange(gate1, gate2, gate3);
+
+            
             var seatsList = new List<string>();
             for (int row = 1; row <= 5; row++)
             {
@@ -49,16 +66,19 @@ if (app.Environment.IsDevelopment())
             }
             var seats = seatsList.ToArray();
 
+            
             var flights = new List<Flight>
             {
-                new() { Id = Guid.NewGuid(), FlightNumber = "SU-101", Destination = "Москва", DepartureTimeUtc = DateTime.UtcNow.AddDays(1), AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "RT-202", Destination = "Казань", DepartureTimeUtc = DateTime.UtcNow.AddDays(2), AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "ZX-999", Destination = "Владивосток", DepartureTimeUtc = DateTime.UtcNow.AddDays(3), AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
-                new() { Id = Guid.NewGuid(), FlightNumber = "S7-777", Destination = "Новосибирск", DepartureTimeUtc = DateTime.UtcNow.AddHours(12), AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Boarding },
-                new() { Id = Guid.NewGuid(), FlightNumber = "U6-333", Destination = "Екатеринбург", DepartureTimeUtc = DateTime.UtcNow.AddDays(5), AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled }
+                new() { Id = Guid.NewGuid(), FlightNumber = "SU-101", OriginAirportId = svo.Id, DestinationAirportId = kzn.Id, DepartureGateId = gate1.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(1), BasePrice = 5500, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "RT-202", OriginAirportId = svo.Id, DestinationAirportId = vvo.Id, DepartureGateId = gate2.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(2), BasePrice = 25000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "ZX-999", OriginAirportId = svo.Id, DestinationAirportId = ovb.Id, DepartureGateId = gate3.Id, DepartureTimeUtc = DateTime.UtcNow.AddDays(3), BasePrice = 12000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled },
+                new() { Id = Guid.NewGuid(), FlightNumber = "S7-777", OriginAirportId = svo.Id, DestinationAirportId = svx.Id, DepartureGateId = null,       DepartureTimeUtc = DateTime.UtcNow.AddHours(12), BasePrice = 8000, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Boarding },
+                
+                new() { Id = Guid.NewGuid(), FlightNumber = "U6-333", OriginAirportId = svx.Id, DestinationAirportId = svo.Id, DepartureGateId = null,       DepartureTimeUtc = DateTime.UtcNow.AddDays(5), BasePrice = 7500, AllSeats = seats, TotalSeats = seats.Length, AvailableSeats = seats.Length, Status = FlightStatus.Scheduled }
             };
             db.Flights.AddRange(flights);
 
+            
             var passengers = new List<Passenger>
             {
                 new() { Id = Guid.NewGuid(), FullName = "Даня", PassportNumber = "7777 000001", IsVip = true },

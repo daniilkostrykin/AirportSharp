@@ -44,6 +44,15 @@ public static class FlightsEndpoints
         })
         .WithSummary("Изменить статус рейса (например, начать посадку)");
 
+        
+        group.MapGet("/{id:guid}", async (Guid id, IFlightService flights, IMapper mapper) =>
+        {
+            var flight = await flights.GetByIdAsync(id);
+            return flight == null 
+                ? Results.NotFound(new ErrorResponse("Рейс не найден.")) 
+                : Results.Ok(mapper.Map(flight));
+        })
+        .WithSummary("Получить информацию о конкретном рейсе");
         return api;
     }
 }

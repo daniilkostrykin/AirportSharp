@@ -11,7 +11,13 @@ namespace RutAirport.services;
 public class FlightService(AirportDbContext db) : IFlightService
 {
     public async Task<IReadOnlyList<Flight>> GetAllAsync()
-        => await db.Flights.AsNoTracking().OrderBy(x => x.DepartureTimeUtc).ToListAsync();
+        => await db.Flights
+            .Include(f => f.OriginAirport)      
+            .Include(f => f.DestinationAirport) 
+            .Include(f => f.DepartureGate)     
+            .AsNoTracking()
+            .OrderBy(x => x.DepartureTimeUtc)
+            .ToListAsync();
 
     public async Task<Flight> AddAsync(CreateFlightRequest request)
     {
@@ -19,15 +25,15 @@ public class FlightService(AirportDbContext db) : IFlightService
         {
             Id = Guid.NewGuid(),
             FlightNumber = request.FlightNumber,
-            OriginCountry = request.OriginCountry,          
-            DestinationCountry = request.DestinationCountry,   
-            Destination = request.Destination,
+            OriginAirportId = request.OriginAirportId,
+            DestinationAirportId = request.DestinationAirportId,
             DepartureTimeUtc = request.DepartureTimeUtc,
             BasePrice = request.BasePrice,                  
             AllSeats = request.AllSeats,
             TotalSeats = request.AllSeats.Length,
             AvailableSeats = request.AllSeats.Length,
-            Status = FlightStatus.Scheduled
+            Status = FlightStatus.Scheduled,
+            DepartureGateId = null 
         };
 
         db.Flights.Add(flight);
@@ -44,4 +50,12 @@ public class FlightService(AirportDbContext db) : IFlightService
         await db.SaveChangesAsync();
         return flight;
     }
+
+    public async Task<Flight?> GetByIdAsync(Guid id)
+        => await db.Flights
+            .Include(f => f.OriginAirport)
+            .Include(f => f.DestinationAirport)
+            .Include(f => f.DepartureGate)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
 }

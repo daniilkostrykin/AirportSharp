@@ -5,21 +5,18 @@
 
 
 
-POST {{baseUrl}}/flights
-Content-Type: application/json
-
-{
-  "flightNumber": "SU-101",
-  "originCountry": "Россия",
-  "destinationCountry": "Турция",
-  "destination": "Стамбул",
-  "departureTimeUtc": "2026-06-01T12:00:00Z",
-  "basePrice": 10000,
-  "allSeats": ["1A", "1B"]
-}
+GET {{baseUrl}}/flights
+Accept: application/json
 
 
-@flightId = {{createFlight.response.body.id}}
+@flightId = {{getFlights.response.body.$[0].id}}
+
+
+
+
+
+GET {{baseUrl}}/flights/{{flightId}}
+Accept: application/json
 
 
 
@@ -60,19 +57,17 @@ Content-Type: application/json
 
 
 
-
 POST {{baseUrl}}/tickets/buy
 Content-Type: application/json
 
 {
   "flightId": "{{flightId}}",
   "passengerId": "{{normalUserId}}",
-  "paymentAmount": 10000
+  "paymentAmount": 8000
 }
 
 
 @normalTicketId = {{buyNormalTicket.response.body.id}}
-
 
 
 
@@ -85,12 +80,11 @@ Content-Type: application/json
 {
   "flightId": "{{flightId}}",
   "passengerId": "{{vipUserId}}",
-  "paymentAmount": 9000
+  "paymentAmount": 7200
 }
 
 
 @vipTicketId = {{buyVipTicket.response.body.id}}
-
 
 
 
@@ -103,8 +97,6 @@ Content-Type: application/json
   "ticketId": "{{normalTicketId}}",
   "seatNumber": "1A"
 }
-
-
 
 
 

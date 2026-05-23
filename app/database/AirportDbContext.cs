@@ -3,35 +3,60 @@ using RutAirport.model;
 
 namespace RutAirport.database;
 
-/// <summary>
-/// Контекст базы данных аэропорта.
-/// Описывает правила создания таблиц в PostgreSQL.
-/// </summary>
 public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbContext(options)
 {
     public DbSet<Flight> Flights { get; set; }
     public DbSet<Passenger> Passengers { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Airport> Airports { get; set; }
+    public DbSet<Gate> Gates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        
+        modelBuilder.Entity<Airport>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.IataCode).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.City).HasMaxLength(100).IsRequired();
+        });
+
+        modelBuilder.Entity<Gate>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(10).IsRequired();
+            entity.HasOne(g => g.Airport).WithMany(a => a.Gates).HasForeignKey(g => g.AirportId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Flight>(entity =>
         {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.FlightNumber).HasMaxLength(20).IsRequired();
-            entity.Property(x => x.Destination).HasMaxLength(100).IsRequired();
+            
+            
+            entity.HasOne(f => f.OriginAirport)
+                  .WithMany()
+                  .HasForeignKey(f => f.OriginAirportId)
+                  .OnDelete(DeleteBehavior.Restrict); 
+
+            
+            entity.HasOne(f => f.DestinationAirport)
+                  .WithMany()
+                  .HasForeignKey(f => f.DestinationAirportId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            
+            entity.HasOne(f => f.DepartureGate)
+                  .WithMany()
+                  .HasForeignKey(f => f.DepartureGateId)
+                  .OnDelete(DeleteBehavior.SetNull); 
         });
 
-        
         modelBuilder.Entity<Passenger>(entity =>
         {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.FullName).HasMaxLength(200).IsRequired();
-            entity.Property(x => x.PassportNumber).HasMaxLength(50).IsRequired();
         });
 
-        
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.HasKey(x => x.Id);
