@@ -1,3 +1,5 @@
+using RutAirport.model;
+
 namespace RutAirport.dto.response;
 
 /// <summary>
@@ -7,11 +9,15 @@ namespace RutAirport.dto.response;
 /// <param name="FlightId">Идентификатор рейса, на который зарегистрирован пассажир.</param>
 /// <param name="PassengerId">Идентификатор пассажира, которому принадлежит талон.</param>
 /// <param name="SeatNumber">Фактически назначенное место в салоне (реальное или виртуальное VIP).</param>
+/// <param name="BookingClass">Класс обслуживания, по которому куплен билет.</param>
+/// <param name="PaidPrice">Фактическая сумма, которую заплатил пассажир.</param>
 /// <param name="CheckInTimeUtc">Время прохождения регистрации в формате UTC.</param>
 public record TicketResponse(
-    Guid Id, 
-    Guid FlightId, 
-    Guid PassengerId, 
-    string? SeatNumber, 
+    Guid Id,
+    Guid FlightId,
+    Guid PassengerId,
+    string? SeatNumber,
+    ServiceClass BookingClass,
+    decimal PaidPrice,
     DateTime? CheckInTimeUtc
 );

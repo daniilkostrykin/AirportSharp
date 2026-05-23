@@ -63,12 +63,12 @@ Content-Type: application/json
 {
   "flightId": "{{flightId}}",
   "passengerId": "{{normalUserId}}",
+  "bookingClass": "Economy",
   "paymentAmount": 8000
 }
 
 
 @normalTicketId = {{buyNormalTicket.response.body.id}}
-
 
 
 
@@ -80,9 +80,9 @@ Content-Type: application/json
 {
   "flightId": "{{flightId}}",
   "passengerId": "{{vipUserId}}",
-  "paymentAmount": 7200
+  "bookingClass": "Business",
+  "paymentAmount": 21600
 }
-
 
 @vipTicketId = {{buyVipTicket.response.body.id}}
 
@@ -108,3 +108,10 @@ Content-Type: application/json
   "ticketId": "{{vipTicketId}}",
   "seatNumber": "1A"
 }
+
+
+
+
+
+GET {{baseUrl}}/flights/{{flightId}}/passengers
+Accept: application/json

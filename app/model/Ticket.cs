@@ -19,6 +19,11 @@ public class Ticket
     /// Идентификатор пассажира, которому принадлежит талон.
     /// </summary>
     public Guid PassengerId { get; set; }
+
+    /// <summary>
+    /// Навигационное свойство к пассажиру, купившему билет.
+    /// </summary>
+    public Passenger? Passenger { get; set; }
     
     /// <summary>
     /// Фактически занимаемое место в салоне.
@@ -34,4 +39,6 @@ public class Ticket
     /// Фактическая сумма, которую заплатил пассажир с учетом скидок.
     /// </summary>
     public decimal PaidPrice { get; set; }
+
+    public ServiceClass BookingClass { get; set; } = ServiceClass.Economy;
 }

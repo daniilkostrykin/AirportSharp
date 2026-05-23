@@ -11,8 +11,10 @@ namespace RutAirport.services;
 /// </summary>
 public class CheckInService(AirportDbContext db) : ICheckInService
 {
+
     public async Task<Ticket> RegisterPassengerAsync(CheckInRequest request)
     {
+        
         var ticket = await db.Tickets.FindAsync(request.TicketId);
         if (ticket == null) throw new ArgumentException("Билет не найден.");
         if (ticket.SeatNumber != null) throw new InvalidOperationException("Вы уже прошли регистрацию.");
@@ -25,16 +27,20 @@ public class CheckInService(AirportDbContext db) : ICheckInService
             throw new ArgumentException("Рейс не найден.");
             
         var passenger = await db.Passengers.FindAsync(ticket.PassengerId);
+        if (passenger == null)
+            throw new ArgumentException("Пассажир не найден.");
+
         
         string targetSeat = request.SeatNumber ?? string.Empty;
 
-        var takenSeats = await db.Tickets
-            .Where(t => t.FlightId == flight.Id && t.SeatNumber != null)
-            .Select(t => t.SeatNumber)
-            .ToListAsync();
-
+        
         if (string.IsNullOrWhiteSpace(targetSeat))
         {
+            var takenSeats = await db.Tickets
+                .Where(t => t.FlightId == flight.Id && t.SeatNumber != null)
+                .Select(t => t.SeatNumber)
+                .ToListAsync();
+
             targetSeat = flight.Aircraft!.SeatMap.FirstOrDefault(s => !takenSeats.Contains(s))!;
             if (targetSeat == null)
             {
@@ -59,10 +65,18 @@ public class CheckInService(AirportDbContext db) : ICheckInService
                 }
             }
         }
+        
         else
         {
             if (!flight.Aircraft!.SeatMap.Contains(targetSeat))
                 throw new ArgumentException("Такого места нет в самолете.");
+
+            
+            var targetSeatClass = flight.Aircraft.GetSeatClass(targetSeat);
+            if (targetSeatClass != ticket.BookingClass)
+            {
+                throw new ArgumentException($"Вы не можете выбрать это место. Ваш тариф: {ticket.BookingClass}, а место относится к классу: {targetSeatClass}");
+            }
 
             var existingTicket = await db.Tickets.FirstOrDefaultAsync(t => t.FlightId == flight.Id && t.SeatNumber == targetSeat);
             
@@ -83,10 +97,67 @@ public class CheckInService(AirportDbContext db) : ICheckInService
             }
         }
 
+        
         ticket.SeatNumber = targetSeat;
         ticket.CheckInTimeUtc = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
+        return ticket;
+    }
+    public async Task<Ticket> BuyTicketAsync(BuyTicketRequest request)
+    {
+        
+        var flight = await db.Flights
+            .Include(f => f.Aircraft)
+            .FirstOrDefaultAsync(f => f.Id == request.FlightId);
+            
+        if (flight == null) 
+            throw new ArgumentException("Рейс не найден.");
+
+        
+        var passenger = await db.Passengers.FindAsync(request.PassengerId);
+        if (passenger == null) 
+            throw new ArgumentException("Пассажир не найден.");
+
+        
+        var multiplier = flight.Aircraft!.GetMultiplier(request.BookingClass);
+        var finalPrice = flight.BasePrice * multiplier;
+
+        
+        if (passenger.IsVip)
+        {
+            finalPrice *= 0.9m;
+        }
+
+        
+        if (request.PaymentAmount < finalPrice)
+        {
+            throw new ArgumentException($"Недостаточно средств. Стоимость билета {request.BookingClass}: {finalPrice} руб.");
+        }
+
+        
+        if (flight.AvailableSeats <= 0)
+        {
+            throw new InvalidOperationException("Свободных мест на данном рейсе больше нет.");
+        }
+
+        
+        var ticket = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            FlightId = flight.Id,
+            PassengerId = passenger.Id,
+            BookingClass = request.BookingClass, 
+            PaidPrice = finalPrice,              
+            SeatNumber = null                    
+        };
+
+        
+        flight.AvailableSeats--;
+
+        db.Tickets.Add(ticket);
+        await db.SaveChangesAsync();
+
         return ticket;
     }
 
@@ -101,44 +172,5 @@ public class CheckInService(AirportDbContext db) : ICheckInService
         await db.SaveChangesAsync();
         return true;
     }
+} 
 
-    public async Task<Ticket> BuyTicketAsync(BuyTicketRequest request)
-    {
-        var flight = await db.Flights.FindAsync(request.FlightId);
-        if (flight == null) throw new ArgumentException("Рейс не найден.");
-
-        var passenger = await db.Passengers.FindAsync(request.PassengerId);
-        if (passenger == null) throw new ArgumentException("Пассажир не найден.");
-
-        bool alreadyBought = await db.Tickets.AnyAsync(t => t.FlightId == flight.Id && t.PassengerId == passenger.Id);
-        if (alreadyBought) throw new InvalidOperationException("Вы уже купили билет на этот рейс.");
-
-        if (flight.AvailableSeats <= 0 && !passenger.IsVip)
-            throw new InvalidOperationException("Все билеты распроданы.");
-
-        decimal finalPrice = passenger.IsVip 
-            ? flight.BasePrice * 0.9m 
-            : flight.BasePrice;
-
-        if (request.PaymentAmount < finalPrice)
-            throw new InvalidOperationException($"Недостаточно средств. Стоимость билета: {finalPrice} руб.");
-
-
-        if (flight.AvailableSeats > 0) 
-            flight.AvailableSeats--;
-
-        var ticket = new Ticket
-        {
-            Id = Guid.NewGuid(),
-            FlightId = flight.Id,
-            PassengerId = passenger.Id,
-            SeatNumber = null, 
-            CheckInTimeUtc = null,
-            PaidPrice = finalPrice
-        };
-
-        db.Tickets.Add(ticket);
-        await db.SaveChangesAsync();
-        return ticket;
-    }
-}

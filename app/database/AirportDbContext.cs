@@ -73,6 +73,10 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
         {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.SeatNumber).HasMaxLength(10);
+            entity.HasOne(t => t.Passenger)
+                  .WithMany()
+                  .HasForeignKey(t => t.PassengerId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

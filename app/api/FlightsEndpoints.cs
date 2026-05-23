@@ -1,58 +1,47 @@
+using Microsoft.EntityFrameworkCore;
+using RutAirport.database;
 using RutAirport.dto;
-using RutAirport.dto.request;
-using RutAirport.dto.response;
 using RutAirport.interfaces;
 using RutAirport.model;
 
 namespace RutAirport.api;
 
-/// <summary>
-/// Маршруты API для управления рейсами аэропорта.
-/// </summary>
 public static class FlightsEndpoints
 {
-    /// <summary>
-    /// Регистрирует эндпоинты работы с расписанием и статусами рейсов.
-    /// </summary>
     public static RouteGroupBuilder MapFlightsEndpoints(this RouteGroupBuilder api)
     {
         var group = api.MapGroup("/flights").WithTags("Flights");
 
-        
-        group.MapGet("/", async (IFlightService flights, IMapper mapper) =>
+        group.MapGet("/", async (IFlightService flightService, IMapper mapper) =>
         {
-            var result = await flights.GetAllAsync();
-            return Results.Ok(result.Select(mapper.Map));
+            var flights = await flightService.GetAllAsync();
+            return Results.Ok(flights.Select(mapper.Map));
         })
-        .WithSummary("Табло рейсов");
+        .WithSummary("1. Получить список всех рейсов (Табло)");
+
+        group.MapGet("/{id:guid}", async (Guid id, IFlightService flightService, IMapper mapper) =>
+        {
+            var flight = await flightService.GetByIdAsync(id);
+            return flight != null 
+                ? Results.Ok(mapper.Map(flight)) 
+                : Results.NotFound(new { message = "Рейс не найден" });
+        })
+        .WithSummary("2. Получить детальную информацию о рейсе");
 
         
-        group.MapPost("/", async (CreateFlightRequest request, IFlightService flights, IMapper mapper) =>
+        group.MapGet("/{id:guid}/passengers", async (Guid id, AirportDbContext db, IMapper mapper) =>
         {
-            var flight = await flights.AddAsync(request);
-            return Results.Created($"/api/flights/{flight.Id}", mapper.Map(flight));
-        })
-        .WithSummary("Добавить новый рейс");
+            var tickets = await db.Tickets
+                .Include(t => t.Passenger) 
+                .Where(t => t.FlightId == id)
+                .AsNoTracking()
+                .ToListAsync();
 
-        
-        group.MapPut("/{id:guid}/status", async (Guid id, FlightStatus status, IFlightService flights, IMapper mapper) =>
-        {
-            var flight = await flights.ChangeStatusAsync(id, status);
-            return flight == null 
-                ? Results.NotFound(new ErrorResponse("Рейс не найден.")) 
-                : Results.Ok(mapper.Map(flight));
+            var response = tickets.Select(mapper.MapToFlightPassenger).ToList();
+            return Results.Ok(response);
         })
-        .WithSummary("Изменить статус рейса (например, начать посадку)");
+        .WithSummary("3. Получить список пассажиров, купивших билеты на этот рейс");
 
-        
-        group.MapGet("/{id:guid}", async (Guid id, IFlightService flights, IMapper mapper) =>
-        {
-            var flight = await flights.GetByIdAsync(id);
-            return flight == null 
-                ? Results.NotFound(new ErrorResponse("Рейс не найден.")) 
-                : Results.Ok(mapper.Map(flight));
-        })
-        .WithSummary("Получить информацию о конкретном рейсе");
         return api;
     }
 }

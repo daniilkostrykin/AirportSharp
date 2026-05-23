@@ -22,4 +22,9 @@ public interface IMapper
     /// Преобразует посадочный талон из базы в DTO ответа API.
     /// </summary>
     TicketResponse Map(Ticket ticket);
+
+    /// <summary>
+    /// Преобразует посадочный талон в безопасный DTO ответа для списка пассажиров рейса.
+    /// </summary>
+    object MapToFlightPassenger(Ticket ticket);
 }
