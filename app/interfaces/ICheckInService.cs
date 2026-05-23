@@ -8,6 +8,7 @@ namespace RutAirport.interfaces;
 /// </summary>
 public interface ICheckInService
 {
+    Task<Ticket> BuyTicketAsync(BuyTicketRequest request);
     /// <summary>
     /// Зарегистрировать пассажира на рейс с ручным выбором места или автоназначением.
     /// </summary>

@@ -12,6 +12,6 @@ public record TicketResponse(
     Guid Id, 
     Guid FlightId, 
     Guid PassengerId, 
-    string SeatNumber, 
-    DateTime CheckInTimeUtc
+    string? SeatNumber, 
+    DateTime? CheckInTimeUtc
 );

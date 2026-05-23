@@ -35,7 +35,7 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.SeatNumber).HasMaxLength(10).IsRequired();
+            entity.Property(x => x.SeatNumber).HasMaxLength(10);
         });
     }
 }

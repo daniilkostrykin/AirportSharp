@@ -10,15 +10,25 @@ namespace RutAirport.api;
 /// </summary>
 public static class CheckInEndpoints
 {
-    /// <summary>
-    /// Регистрирует эндпоинты управления посадкой.
-    /// </summary>
     public static RouteGroupBuilder MapCheckInEndpoints(this RouteGroupBuilder api)
     {
-        var group = api.MapGroup("/checkin").WithTags("Check-In");
+        var group = api.MapGroup("/tickets").WithTags("Tickets & Check-In");
 
-        
-        group.MapPost("/", async (CheckInRequest request, ICheckInService checkIn, IMapper mapper) =>
+        group.MapPost("/buy", async (BuyTicketRequest request, ICheckInService checkIn, IMapper mapper) =>
+        {
+            try
+            {
+                var ticket = await checkIn.BuyTicketAsync(request);
+                return Results.Ok(mapper.Map(ticket));
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                return Results.BadRequest(new ErrorResponse(ex.Message));
+            }
+        })
+        .WithSummary("1. Купить билет на рейс (без выбора места)");
+
+        group.MapPost("/checkin", async (CheckInRequest request, ICheckInService checkIn, IMapper mapper) =>
         {
             try
             {
@@ -30,17 +40,16 @@ public static class CheckInEndpoints
                 return Results.BadRequest(new ErrorResponse(ex.Message));
             }
         })
-        .WithSummary("Зарегистрировать пассажира на конкретное место");
+        .WithSummary("2. Пройти регистрацию (назначить место)");
 
-        
-        group.MapDelete("/{ticketId:guid}", async (Guid ticketId, ICheckInService checkIn) =>
+        group.MapDelete("/checkin/{ticketId:guid}", async (Guid ticketId, ICheckInService checkIn) =>
         {
             var result = await checkIn.CancelCheckInAsync(ticketId);
             return result 
-                ? Results.Ok(new { message = "Регистрация успешно отменена, место возвращено." }) 
-                : Results.NotFound(new ErrorResponse("Талон не найден."));
+                ? Results.Ok(new { message = "Посадка отменена, место освобождено. Билет активен." }) 
+                : Results.NotFound(new ErrorResponse("Билет не найден или регистрация еще не пройдена."));
         })
-        .WithSummary("Отменить регистрацию и вернуть место");
+        .WithSummary("3. Отменить регистрацию");
 
         return api;
     }

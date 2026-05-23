@@ -44,4 +44,19 @@ public class Flight
     /// Текущий статус рейса (по расписанию, посадка, вылетел, отменен).
     /// </summary>
     public FlightStatus Status { get; set; } = FlightStatus.Scheduled;
+
+    /// <summary>
+    /// Страна вылета.
+    /// </summary>
+    public string OriginCountry { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Страна прибытия.
+    /// </summary>
+    public string DestinationCountry { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Базовая стоимость билета в рублях.
+    /// </summary>
+    public decimal BasePrice { get; set; }
 }

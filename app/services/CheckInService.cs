@@ -13,87 +13,127 @@ public class CheckInService(AirportDbContext db) : ICheckInService
 {
     public async Task<Ticket> RegisterPassengerAsync(CheckInRequest request)
     {
-        var flight = await db.Flights.FindAsync(request.FlightId);
-        if (flight == null) throw new ArgumentException("Рейс не найден.");
+        var ticket = await db.Tickets.FindAsync(request.TicketId);
+        if (ticket == null) throw new ArgumentException("Билет не найден.");
+        if (ticket.SeatNumber != null) throw new InvalidOperationException("Вы уже прошли регистрацию.");
 
-        if (flight.Status == FlightStatus.Departed || flight.Status == FlightStatus.Cancelled)
-            throw new InvalidOperationException("Регистрация на этот рейс закрыта.");
-
-        var passenger = await db.Passengers.FindAsync(request.PassengerId);
-        if (passenger == null) throw new ArgumentException("Пассажир не найден.");
-
-        bool alreadyCheckedIn = await db.Tickets.AnyAsync(t => t.FlightId == flight.Id && t.PassengerId == passenger.Id);
-        if (alreadyCheckedIn)
-            throw new InvalidOperationException("Пассажир уже зарегистрирован на этот рейс.");
-
+        var flight = await db.Flights.FindAsync(ticket.FlightId);
+        var passenger = await db.Passengers.FindAsync(ticket.PassengerId);
+        
         string targetSeat = request.SeatNumber ?? string.Empty;
+
+        var takenSeats = await db.Tickets
+            .Where(t => t.FlightId == flight.Id && t.SeatNumber != null)
+            .Select(t => t.SeatNumber)
+            .ToListAsync();
 
         if (string.IsNullOrWhiteSpace(targetSeat))
         {
-            var takenSeats = await db.Tickets
-                .Where(t => t.FlightId == flight.Id)
-                .Select(t => t.SeatNumber)
-                .ToListAsync();
-
-            targetSeat = flight.AllSeats.FirstOrDefault(s => !takenSeats.Contains(s));
+            targetSeat = flight.AllSeats.FirstOrDefault(s => !takenSeats.Contains(s))!;
 
             if (targetSeat == null)
             {
                 if (!passenger.IsVip)
-                    throw new InvalidOperationException("Нет свободных мест для автоназначения. Доступен только VIP-овербукинг.");
-                
-                targetSeat = $"VIP-{(new Random().Next(100, 999))}";
-            }
-            else
-            {
-                flight.AvailableSeats--; 
+                    throw new InvalidOperationException("Физических мест нет. Регистрация закрыта.");
+
+                var victimTicket = await (from t in db.Tickets
+                                          join p in db.Passengers on t.PassengerId equals p.Id
+                                          where t.FlightId == flight.Id && !p.IsVip && t.SeatNumber != null
+                                          orderby t.CheckInTimeUtc descending
+                                          select t).FirstOrDefaultAsync();
+
+                if (victimTicket != null)
+                {
+                    targetSeat = victimTicket.SeatNumber!;
+                    victimTicket.SeatNumber = null;
+                    victimTicket.CheckInTimeUtc = null;
+                }
+                else
+                {
+                    targetSeat = $"VIP-{(new Random().Next(100, 999))}";
+                }
             }
         }
         else
         {
-            bool isSeatTaken = await db.Tickets.AnyAsync(t => t.FlightId == flight.Id && t.SeatNumber == targetSeat);
-            if (isSeatTaken)
-                throw new InvalidOperationException($"Место {targetSeat} уже занято.");
-
             if (!flight.AllSeats.Contains(targetSeat))
+                throw new ArgumentException("Такого места нет в самолете.");
+
+            var existingTicket = await db.Tickets.FirstOrDefaultAsync(t => t.FlightId == flight.Id && t.SeatNumber == targetSeat);
+            
+            if (existingTicket != null)
             {
-                if (!passenger.IsVip)
-                    throw new ArgumentException($"Места {targetSeat} не существует на этом рейсе.");
-            }
-            else
-            {
-                flight.AvailableSeats--;
+                if (!passenger.IsVip) throw new InvalidOperationException("Место занято.");
+
+                var occupant = await db.Passengers.FindAsync(existingTicket.PassengerId);
+                if (occupant != null && !occupant.IsVip)
+                {
+                    existingTicket.SeatNumber = null;
+                    existingTicket.CheckInTimeUtc = null;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Место занято другим VIP-клиентом.");
+                }
             }
         }
 
-        var ticket = new Ticket
-        {
-            Id = Guid.NewGuid(),
-            FlightId = flight.Id,
-            PassengerId = passenger.Id,
-            SeatNumber = targetSeat,
-            CheckInTimeUtc = DateTime.UtcNow
-        };
+        ticket.SeatNumber = targetSeat;
+        ticket.CheckInTimeUtc = DateTime.UtcNow;
 
-        db.Tickets.Add(ticket);
         await db.SaveChangesAsync();
-
         return ticket;
     }
 
     public async Task<bool> CancelCheckInAsync(Guid ticketId)
     {
         var ticket = await db.Tickets.FindAsync(ticketId);
-        if (ticket == null) return false;
+        if (ticket == null || ticket.SeatNumber == null) return false;
 
-        var flight = await db.Flights.FindAsync(ticket.FlightId);
-        if (flight != null && flight.AllSeats.Contains(ticket.SeatNumber))
-        {
-            flight.AvailableSeats++; 
-        }
+        ticket.SeatNumber = null;
+        ticket.CheckInTimeUtc = null;
 
-        db.Tickets.Remove(ticket);
         await db.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<Ticket> BuyTicketAsync(BuyTicketRequest request)
+    {
+        var flight = await db.Flights.FindAsync(request.FlightId);
+        if (flight == null) throw new ArgumentException("Рейс не найден.");
+
+        var passenger = await db.Passengers.FindAsync(request.PassengerId);
+        if (passenger == null) throw new ArgumentException("Пассажир не найден.");
+
+        bool alreadyBought = await db.Tickets.AnyAsync(t => t.FlightId == flight.Id && t.PassengerId == passenger.Id);
+        if (alreadyBought) throw new InvalidOperationException("Вы уже купили билет на этот рейс.");
+
+        if (flight.AvailableSeats <= 0 && !passenger.IsVip)
+            throw new InvalidOperationException("Все билеты распроданы.");
+
+        decimal finalPrice = passenger.IsVip 
+            ? flight.BasePrice * 0.9m 
+            : flight.BasePrice;
+
+        if (request.PaymentAmount < finalPrice)
+            throw new InvalidOperationException($"Недостаточно средств. Стоимость билета: {finalPrice} руб.");
+
+
+        if (flight.AvailableSeats > 0) 
+            flight.AvailableSeats--;
+
+        var ticket = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            FlightId = flight.Id,
+            PassengerId = passenger.Id,
+            SeatNumber = null, 
+            CheckInTimeUtc = null,
+            PaidPrice = finalPrice
+        };
+
+        db.Tickets.Add(ticket);
+        await db.SaveChangesAsync();
+        return ticket;
     }
 }

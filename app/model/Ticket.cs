@@ -23,10 +23,15 @@ public class Ticket
     /// <summary>
     /// Фактически занимаемое место в салоне.
     /// </summary>
-    public string SeatNumber { get; set; } = string.Empty; 
+    public string? SeatNumber { get; set; } = string.Empty; 
 
     /// <summary>
     /// Время прохождения регистрации и выдачи талона в формате UTC.
     /// </summary>
-    public DateTime CheckInTimeUtc { get; set; }
+    public DateTime? CheckInTimeUtc { get; set; }
+
+    /// <summary>
+    /// Фактическая сумма, которую заплатил пассажир с учетом скидок.
+    /// </summary>
+    public decimal PaidPrice { get; set; }
 }

@@ -12,8 +12,11 @@ public class Mapper : IMapper
     public FlightResponse Map(Flight flight) => new(
         flight.Id, 
         flight.FlightNumber, 
+        flight.OriginCountry,
+        flight.DestinationCountry,
         flight.Destination, 
         flight.DepartureTimeUtc, 
+        flight.BasePrice,
         flight.TotalSeats, 
         flight.AvailableSeats, 
         flight.Status.ToString()

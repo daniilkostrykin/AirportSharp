@@ -9,7 +9,10 @@ namespace RutAirport.dto.request;
 /// <param name="AllSeats">Массив всех конкретных мест, доступных в самолете.</param>
 public record CreateFlightRequest(
     string FlightNumber, 
-    string Destination, 
+    string OriginCountry,     
+    string DestinationCountry,
+    string Destination,
     DateTime DepartureTimeUtc, 
+    decimal BasePrice,
     string[] AllSeats 
 );

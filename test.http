@@ -1,0 +1,118 @@
+
+@baseUrl = http://localhost:5254/api
+
+
+
+
+
+POST {{baseUrl}}/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "SU-101",
+  "originCountry": "Россия",
+  "destinationCountry": "Турция",
+  "destination": "Стамбул",
+  "departureTimeUtc": "2026-06-01T12:00:00Z",
+  "basePrice": 10000,
+  "allSeats": ["1A", "1B"]
+}
+
+
+@flightId = {{createFlight.response.body.id}}
+
+
+
+
+
+
+POST {{baseUrl}}/passengers
+Content-Type: application/json
+
+{
+  "fullName": "Иван Иванов (Обычный)",
+  "passportNumber": "1111 111111",
+  "isVip": false
+}
+
+
+@normalUserId = {{createNormalUser.response.body.id}}
+
+
+
+
+
+
+POST {{baseUrl}}/passengers
+Content-Type: application/json
+
+{
+  "fullName": "Даня Кострыкин (VIP)",
+  "passportNumber": "7777 777777",
+  "isVip": true
+}
+
+
+@vipUserId = {{createVipUser.response.body.id}}
+
+
+
+
+
+
+
+POST {{baseUrl}}/tickets/buy
+Content-Type: application/json
+
+{
+  "flightId": "{{flightId}}",
+  "passengerId": "{{normalUserId}}",
+  "paymentAmount": 10000
+}
+
+
+@normalTicketId = {{buyNormalTicket.response.body.id}}
+
+
+
+
+
+
+
+POST {{baseUrl}}/tickets/buy
+Content-Type: application/json
+
+{
+  "flightId": "{{flightId}}",
+  "passengerId": "{{vipUserId}}",
+  "paymentAmount": 9000
+}
+
+
+@vipTicketId = {{buyVipTicket.response.body.id}}
+
+
+
+
+
+
+POST {{baseUrl}}/tickets/checkin
+Content-Type: application/json
+
+{
+  "ticketId": "{{normalTicketId}}",
+  "seatNumber": "1A"
+}
+
+
+
+
+
+
+POST {{baseUrl}}/tickets/checkin
+Content-Type: application/json
+
+{
+  "ticketId": "{{vipTicketId}}",
+  "seatNumber": "1A"
+}

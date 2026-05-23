@@ -19,8 +19,11 @@ public class FlightService(AirportDbContext db) : IFlightService
         {
             Id = Guid.NewGuid(),
             FlightNumber = request.FlightNumber,
+            OriginCountry = request.OriginCountry,          
+            DestinationCountry = request.DestinationCountry,   
             Destination = request.Destination,
             DepartureTimeUtc = request.DepartureTimeUtc,
+            BasePrice = request.BasePrice,                  
             AllSeats = request.AllSeats,
             TotalSeats = request.AllSeats.Length,
             AvailableSeats = request.AllSeats.Length,
