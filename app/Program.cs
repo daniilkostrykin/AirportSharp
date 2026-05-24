@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Identity;
 using RutAirport.api;
 using RutAirport.database;
 using RutAirport.dto;
@@ -15,13 +20,59 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "RUT Airport API", Version = "v1" });
+
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "Введите токен в формате: Bearer {твой_токен}",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document =>
+    {
+        var securitySchemeRef = new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document, null);
+        var requirement = new Microsoft.OpenApi.OpenApiSecurityRequirement();
+        requirement.Add(securitySchemeRef, new List<string>());
+        return requirement;
+    });
 });
+
 
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 builder.Services.AddDbContext<AirportDbContext>(options => options.UseNpgsql(connectionString));
+
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+    };
+});
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IFlightService, FlightService>();
 builder.Services.AddScoped<IPassengerService, PassengerService>();
@@ -38,31 +89,41 @@ if (app.Environment.IsDevelopment())
         await db.Database.EnsureCreatedAsync(); 
 
         
+        if (!db.Users.Any())
+        {
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "danya_admin",
+                Role = "Admin" 
+            };
+            var hasher = new PasswordHasher<User>();
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "rut_miit_2026");
+            db.Users.Add(adminUser);
+            await db.SaveChangesAsync();
+        }
+
+        
         if (!db.Airports.Any()) 
         {
-            
             var svo = new Airport { Id = Guid.NewGuid(), IataCode = "SVO", Name = "Шереметьево", City = "Москва", Country = "Россия", TimeZone = "Europe/Moscow" };
             var kzn = new Airport { Id = Guid.NewGuid(), IataCode = "KZN", Name = "Казань", City = "Казань", Country = "Россия", TimeZone = "Europe/Moscow" };
             var vvo = new Airport { Id = Guid.NewGuid(), IataCode = "VVO", Name = "Кневичи", City = "Владивосток", Country = "Россия", TimeZone = "Asia/Vladivostok" };
             var ovb = new Airport { Id = Guid.NewGuid(), IataCode = "OVB", Name = "Толмачево", City = "Новосибирск", Country = "Россия", TimeZone = "Asia/Novosibirsk" };
             var svx = new Airport { Id = Guid.NewGuid(), IataCode = "SVX", Name = "Кольцово", City = "Екатеринбург", Country = "Россия", TimeZone = "Asia/Yekaterinburg" };
-            
             db.Airports.AddRange(svo, kzn, vvo, ovb, svx);
 
-            
             var gate1 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "14A" };
             var gate2 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "14B" };
             var gate3 = new Gate { Id = Guid.NewGuid(), AirportId = svo.Id, Name = "15" };
             db.Gates.AddRange(gate1, gate2, gate3);
 
-            
             var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "aircrafts.json");
             var aircraftsJson = await File.ReadAllTextAsync(jsonPath);
             var aircraftSeedData = System.Text.Json.JsonSerializer.Deserialize<List<AircraftSeedDto>>(aircraftsJson);
 
             var aircraftDict = new Dictionary<string, Aircraft>();
             var alphabet = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
-
             foreach (var dto in aircraftSeedData!)
             {
                 var seatMap = new List<string>();
@@ -81,13 +142,11 @@ if (app.Environment.IsDevelopment())
                     SeatMap = seatMap.ToArray(), 
                     TotalSeats = seatMap.Count 
                 };
-                
                 db.Aircrafts.Add(aircraft);
                 aircraftDict[dto.ModelName] = aircraft; 
             }
             await db.SaveChangesAsync();
 
-            
             var ssj = aircraftDict["Sukhoi Superjet 100-95B"];
             var b777 = aircraftDict["Boeing 777-300ER"];
             var mc21 = aircraftDict["Irkut MC-21-300"];
@@ -104,11 +163,10 @@ if (app.Environment.IsDevelopment())
             };
             db.Flights.AddRange(flights);
 
-            
             var passengers = new List<Passenger>
             {
                 new() { Id = Guid.NewGuid(), FullName = "Даня", PassportNumber = "7777 000001", IsVip = true },
-                new() { Id = Guid.NewGuid(), FullName = "Дима", PassportNumber = "1234 567890", IsVip = false },    
+                new() { Id = Guid.NewGuid(), FullName = "Дима", PassportNumber = "1234 567890", IsVip = false },  
                 new() { Id = Guid.NewGuid(), FullName = "Алиса", PassportNumber = "0987 654321", IsVip = false },
                 new() { Id = Guid.NewGuid(), FullName = "Маша", PassportNumber = "1111 222222", IsVip = true },
                 new() { Id = Guid.NewGuid(), FullName = "Петя", PassportNumber = "3333 444444", IsVip = false },
@@ -132,15 +190,21 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 var api = app.MapGroup("/api");
+
+
+api.MapAuthEndpoints(builder.Configuration);
+
 api.MapFlightsEndpoints();
 api.MapPassengersEndpoints();
 api.MapCheckInEndpoints();
 
 app.MapGet("/", () => Results.Ok(new { message = "Аэропорт работает! Перейдите на /swagger" }));
-
 await app.RunAsync();
-
 
 public class AircraftSeedDto
 {

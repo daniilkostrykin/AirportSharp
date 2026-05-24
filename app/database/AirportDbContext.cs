@@ -11,6 +11,7 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
     public DbSet<Airport> Airports { get; set; }
     public DbSet<Gate> Gates { get; set; }
     public DbSet<Aircraft> Aircrafts { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

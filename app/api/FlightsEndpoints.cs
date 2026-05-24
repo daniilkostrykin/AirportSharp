@@ -12,6 +12,7 @@ public static class FlightsEndpoints
     {
         var group = api.MapGroup("/flights").WithTags("Flights");
 
+        
         group.MapGet("/", async (IFlightService flightService, IMapper mapper) =>
         {
             var flights = await flightService.GetAllAsync();
@@ -19,6 +20,7 @@ public static class FlightsEndpoints
         })
         .WithSummary("1. Получить список всех рейсов (Табло)");
 
+        
         group.MapGet("/{id:guid}", async (Guid id, IFlightService flightService, IMapper mapper) =>
         {
             var flight = await flightService.GetByIdAsync(id);
@@ -40,7 +42,8 @@ public static class FlightsEndpoints
             var response = tickets.Select(mapper.MapToFlightPassenger).ToList();
             return Results.Ok(response);
         })
-        .WithSummary("3. Получить список пассажиров, купивших билеты на этот рейс");
+        .WithSummary("3. Список пассажиров на рейсе (Только для персонала)")
+        .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager")); 
 
         return api;
     }

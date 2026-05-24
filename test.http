@@ -5,6 +5,49 @@
 
 
 
+
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "danya_admin",
+  "password": "rut_miit_2026"
+}
+
+
+@adminToken = {{loginAdmin.response.body.token}}
+
+
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "petya_buyer",
+  "password": "123"
+}
+
+
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "petya_buyer",
+  "password": "123"
+}
+
+
+@userToken = {{loginUser.response.body.token}}
+
+
+
+
+
+
+
+
 GET {{baseUrl}}/flights
 Accept: application/json
 
@@ -15,15 +58,11 @@ Accept: application/json
 
 
 
-GET {{baseUrl}}/flights/{{flightId}}
-Accept: application/json
-
-
-
 
 
 
 POST {{baseUrl}}/passengers
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -37,10 +76,23 @@ Content-Type: application/json
 
 
 
+POST {{baseUrl}}/passengers
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "fullName": "Петр Петров (Бизнес, не VIP)",
+  "passportNumber": "2222 222222",
+  "isVip": false
+}
+
+
+@businessUserId = {{createBusinessUser.response.body.id}}
 
 
 
 POST {{baseUrl}}/passengers
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -57,7 +109,10 @@ Content-Type: application/json
 
 
 
+
+
 POST {{baseUrl}}/tickets/buy
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -72,9 +127,24 @@ Content-Type: application/json
 
 
 
+POST {{baseUrl}}/tickets/buy
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "flightId": "{{flightId}}",
+  "passengerId": "{{businessUserId}}",
+  "bookingClass": "Business",
+  "paymentAmount": 24000
+}
+
+
+@businessTicketId = {{buyBusinessTicket.response.body.id}}
+
 
 
 POST {{baseUrl}}/tickets/buy
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -84,13 +154,18 @@ Content-Type: application/json
   "paymentAmount": 21600
 }
 
+
 @vipTicketId = {{buyVipTicket.response.body.id}}
 
 
 
 
 
+
+
+
 POST {{baseUrl}}/tickets/checkin
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -99,9 +174,28 @@ Content-Type: application/json
 }
 
 
+POST {{baseUrl}}/tickets/checkin
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "ticketId": "{{normalTicketId}}",
+  "seatNumber": "10A"
+}
 
 
 POST {{baseUrl}}/tickets/checkin
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "ticketId": "{{businessTicketId}}",
+  "seatNumber": "1A"
+}
+
+
+POST {{baseUrl}}/tickets/checkin
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
@@ -113,5 +207,20 @@ Content-Type: application/json
 
 
 
+
+
+
 GET {{baseUrl}}/flights/{{flightId}}/passengers
+Authorization: Bearer {{userToken}}
 Accept: application/json
+
+
+
+GET {{baseUrl}}/flights/{{flightId}}/passengers
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+
+DELETE {{baseUrl}}/tickets/checkin/{{normalTicketId}}
+Authorization: Bearer {{adminToken}}
