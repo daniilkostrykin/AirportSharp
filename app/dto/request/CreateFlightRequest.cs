@@ -1,4 +1,4 @@
-namespace RutAirport.dto.request;
+namespace AirportApp.dto.request;
 
 public record CreateFlightRequest(
     string FlightNumber, 

@@ -1,4 +1,4 @@
-=== Шпаргалка по тестированию API RutAirport ===
+=== Шпаргалка по тестированию API AirportApp ===
 
 1. POST /api/flights
    Берем тело из POST_api_flights_request.json.
@@ -23,3 +23,4 @@
 6. DELETE /api/checkin/{ticketId}
    Отменяем регистрацию первого пассажира.
    Смотрим GET /api/flights — кол-во availableSeats должно снова увеличиться!
+

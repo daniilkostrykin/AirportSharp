@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using RutAirport.database;
-using RutAirport.dto.request;
-using RutAirport.interfaces;
-using RutAirport.model;
+using AirportApp.database;
+using AirportApp.dto.request;
+using AirportApp.interfaces;
+using AirportApp.model;
 
-namespace RutAirport.services;
+namespace AirportApp.services;
 
 public class FlightService(AirportDbContext db) : IFlightService
 {

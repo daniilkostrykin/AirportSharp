@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using RutAirport.database;
-using RutAirport.dto.request;
-using RutAirport.interfaces;
-using RutAirport.model;
+using AirportApp.database;
+using AirportApp.dto.request;
+using AirportApp.interfaces;
+using AirportApp.model;
 
-namespace RutAirport.services;
+namespace AirportApp.services;
 
 /// <summary>
 /// Сервис регистрации пассажиров. Реализует правила распределения мест и VIP-овербукинга.
@@ -30,7 +30,6 @@ public class CheckInService(AirportDbContext db) : ICheckInService
         if (passenger == null)
             throw new ArgumentException("Пассажир не найден.");
 
-        
         string targetSeat = request.SeatNumber ?? string.Empty;
 
         
@@ -173,4 +172,5 @@ public class CheckInService(AirportDbContext db) : ICheckInService
         return true;
     }
 } 
+
 

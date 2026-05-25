@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Выход на посадку. Привязан к конкретному аэропорту.

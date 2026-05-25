@@ -4,13 +4,13 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using RutAirport.database;
-using RutAirport.model;
+using AirportApp.database;
+using AirportApp.model;
 
-namespace RutAirport.api;
+namespace AirportApp.api;
 
 public record LoginRequest(string Username, string Password);
-public record RegisterRequest(string Username, string Password); 
+public record RegisterRequest(string Username, string Password);
 
 public static class AuthEndpoints
 {
@@ -32,7 +32,6 @@ public static class AuthEndpoints
                 Username = request.Username,
                 Role = "User" 
             };
-            
             
             user.PasswordHash = hasher.HashPassword(user, request.Password);
 
@@ -58,7 +57,7 @@ public static class AuthEndpoints
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, user.Username),
-                new(ClaimTypes.Role, user.Role) 
+                new(ClaimTypes.Role, user.Role)
             };
 
             var key = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]!);

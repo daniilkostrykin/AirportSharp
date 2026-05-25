@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Воздушное судно. Определяет физическую вместимость и схему салона.

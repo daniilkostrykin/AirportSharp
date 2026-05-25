@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using RutAirport.database;
-using RutAirport.dto;
-using RutAirport.interfaces;
-using RutAirport.model;
+using AirportApp.database;
+using AirportApp.dto;
+using AirportApp.interfaces;
+using AirportApp.model;
 
-namespace RutAirport.api;
+namespace AirportApp.api;
 
 public static class FlightsEndpoints
 {
@@ -43,7 +43,7 @@ public static class FlightsEndpoints
             return Results.Ok(response);
         })
         .WithSummary("3. Список пассажиров на рейсе (Только для персонала)")
-        .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager")); 
+        .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager"));
 
         return api;
     }

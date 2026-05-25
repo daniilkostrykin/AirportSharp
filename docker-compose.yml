@@ -3,12 +3,12 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: rut-postgres
+    container_name: airport-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: rut_airport
+      POSTGRES_DB: airport_db
     ports:
       - "5432:5432"
     volumes:
@@ -18,14 +18,14 @@ services:
     build:
       context: ./app 
       dockerfile: Dockerfile
-    container_name: rut-airport-api
+    container_name: airport-api
     restart: always
     depends_on:
       - db
     ports:
       - "5254:8080"
     environment:
-      - ConnectionStrings__Postgres=Host=db;Port=5432;Database=rut_airport;Username=postgres;Password=postgres
+      - ConnectionStrings__Postgres=Host=db;Port=5432;Database=airport_db;Username=postgres;Password=postgres
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:
       - ./app/data:/app/data

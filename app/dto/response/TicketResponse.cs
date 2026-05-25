@@ -1,6 +1,6 @@
-using RutAirport.model;
+using AirportApp.model;
 
-namespace RutAirport.dto.response;
+namespace AirportApp.dto.response;
 
 /// <summary>
 /// DTO электронного посадочного талона, выданного после успешной регистрации.

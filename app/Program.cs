@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Identity;
-using RutAirport.api;
-using RutAirport.database;
-using RutAirport.dto;
-using RutAirport.interfaces;
-using RutAirport.services;
-using RutAirport.model;
+using AirportApp.api;
+using AirportApp.database;
+using AirportApp.dto;
+using AirportApp.interfaces;
+using AirportApp.services;
+using AirportApp.model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +24,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new() { Title = "RUT Airport API", Version = "v1" });
+    options.SwaggerDoc("v1", new() { Title = "Airport API", Version = "v1" });
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.ParameterLocation.Header,
-        Description = "Введите токен в формате: Bearer {твой_токен}",
+        Description = "Введите токен в формате: Bearer",
         Name = "Authorization",
         Type = Microsoft.OpenApi.SecuritySchemeType.Http,
         Scheme = "bearer",
@@ -95,10 +95,10 @@ if (app.Environment.IsDevelopment())
             {
                 Id = Guid.NewGuid(),
                 Username = "danya_admin",
-                Role = "Admin" 
+                Role = "Admin"
             };
             var hasher = new PasswordHasher<User>();
-            adminUser.PasswordHash = hasher.HashPassword(adminUser, "rut_miit_2026");
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "airport_2026");
             db.Users.Add(adminUser);
             await db.SaveChangesAsync();
         }
@@ -185,7 +185,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "RUT Airport API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Airport API v1");
         options.RoutePrefix = "swagger";
     });
 }

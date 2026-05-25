@@ -1,5 +1,5 @@
-using RutAirport.model;
-namespace RutAirport.dto.request;
+using AirportApp.model;
+namespace AirportApp.dto.request;
 
 public record BuyTicketRequest(
     Guid FlightId,

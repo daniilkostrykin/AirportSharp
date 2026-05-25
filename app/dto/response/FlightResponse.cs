@@ -1,4 +1,4 @@
-namespace RutAirport.dto.response;
+namespace AirportApp.dto.response;
 
 /// <summary>
 /// DTO ответа с данными рейса (используется для вывода на табло аэропорта).

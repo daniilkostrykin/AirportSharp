@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using RutAirport.database;
-using RutAirport.dto.request;
-using RutAirport.interfaces;
-using RutAirport.model;
+using AirportApp.database;
+using AirportApp.dto.request;
+using AirportApp.interfaces;
+using AirportApp.model;
 
-namespace RutAirport.services;
+namespace AirportApp.services;
 
 /// <summary>
 /// Сервис для работы с пассажирами. Обеспечивает ведение базы клиентов.
@@ -29,3 +29,4 @@ public class PassengerService(AirportDbContext db) : IPassengerService
         return passenger;
     }
 }
+

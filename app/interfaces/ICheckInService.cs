@@ -1,7 +1,7 @@
-using RutAirport.dto.request;
-using RutAirport.model;
+using AirportApp.dto.request;
+using AirportApp.model;
 
-namespace RutAirport.interfaces;
+namespace AirportApp.interfaces;
 
 /// <summary>
 /// Интерфейс сервиса регистрации пассажиров и выдачи посадочных талонов.

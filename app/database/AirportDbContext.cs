@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using RutAirport.model;
+using AirportApp.model;
 
-namespace RutAirport.database;
+namespace AirportApp.database;
 
 public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbContext(options)
 {
@@ -44,7 +44,7 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
             entity.HasOne(f => f.OriginAirport)
                   .WithMany()
                   .HasForeignKey(f => f.OriginAirportId)
-                  .OnDelete(DeleteBehavior.Restrict); 
+                  .OnDelete(DeleteBehavior.Restrict);
 
             
             entity.HasOne(f => f.DestinationAirport)

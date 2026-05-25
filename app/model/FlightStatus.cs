@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Перечисление возможных статусов рейса.

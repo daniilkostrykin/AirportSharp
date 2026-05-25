@@ -1,8 +1,8 @@
-using RutAirport.dto;
-using RutAirport.dto.request;
-using RutAirport.interfaces;
+using AirportApp.dto;
+using AirportApp.dto.request;
+using AirportApp.interfaces;
 
-namespace RutAirport.api;
+namespace AirportApp.api;
 
 public static class PassengersEndpoints
 {
@@ -26,7 +26,7 @@ public static class PassengersEndpoints
             return Results.Created($"/api/passengers/{passenger.Id}", mapper.Map(passenger));
         })
         .WithSummary("Зарегистрировать профиль пассажира")
-        .RequireAuthorization(); 
+        .RequireAuthorization();
 
         return api;
     }

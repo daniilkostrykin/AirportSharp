@@ -1,7 +1,7 @@
-using RutAirport.dto.response;
-using RutAirport.model;
+using AirportApp.dto.response;
+using AirportApp.model;
 
-namespace RutAirport.dto;
+namespace AirportApp.dto;
 
 /// <summary>
 /// Контракт маппера доменных моделей аэропорта в DTO ответов API.

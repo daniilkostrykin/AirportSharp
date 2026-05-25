@@ -1,8 +1,8 @@
-using RutAirport.dto.response;
-using RutAirport.interfaces;
-using RutAirport.model;
+using AirportApp.dto.response;
+using AirportApp.interfaces;
+using AirportApp.model;
 
-namespace RutAirport.dto;
+namespace AirportApp.dto;
 
 public class Mapper : IMapper
 {

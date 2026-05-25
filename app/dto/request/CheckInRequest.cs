@@ -1,4 +1,4 @@
-namespace RutAirport.dto.request;
+namespace AirportApp.dto.request;
 
 /// <summary>
 /// DTO запроса на регистрацию пассажира на рейс.

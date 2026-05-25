@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 public class Flight
 {

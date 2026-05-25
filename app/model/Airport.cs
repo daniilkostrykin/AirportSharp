@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Аэропорт. Содержит географические данные и международный код.

@@ -1,9 +1,9 @@
-using RutAirport.dto;
-using RutAirport.dto.request;
-using RutAirport.dto.response;
-using RutAirport.interfaces;
+using AirportApp.dto;
+using AirportApp.dto.request;
+using AirportApp.dto.response;
+using AirportApp.interfaces;
 
-namespace RutAirport.api;
+namespace AirportApp.api;
 
 public static class CheckInEndpoints
 {

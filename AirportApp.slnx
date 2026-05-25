@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/app/">
-    <Project Path="app/RutAirport.csproj" />
+    <Project Path="app/AirportApp.csproj" />
   </Folder>
 </Solution>
+

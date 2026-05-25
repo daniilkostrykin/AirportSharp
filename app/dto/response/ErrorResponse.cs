@@ -1,4 +1,4 @@
-namespace RutAirport.dto.response;
+namespace AirportApp.dto.response;
 
 /// <summary>
 /// DTO стандартной ошибки API. Возвращается при неудачных проверках бизнес-логики.

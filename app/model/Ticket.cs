@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Посадочный талон. Является связующим звеном между пассажиром и рейсом.

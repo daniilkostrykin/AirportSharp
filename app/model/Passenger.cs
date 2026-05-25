@@ -1,4 +1,4 @@
-namespace RutAirport.model;
+namespace AirportApp.model;
 
 /// <summary>
 /// Пассажир аэропорта. Содержит личные данные и статус лояльности.
