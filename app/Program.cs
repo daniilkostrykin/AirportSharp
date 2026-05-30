@@ -21,7 +21,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 
-
+// Swagger security scheme for JWT
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "Airport API", Version = "v1" });
@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen(options =>
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 builder.Services.AddDbContext<AirportDbContext>(options => options.UseNpgsql(connectionString));
 
-
+// JWT authentication settings
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
 
@@ -88,7 +88,7 @@ if (app.Environment.IsDevelopment())
         var db = scope.ServiceProvider.GetRequiredService<AirportDbContext>();
         await db.Database.EnsureCreatedAsync(); 
 
-        
+        // Initial administrator account
         if (!db.Users.Any())
         {
             var adminUser = new User
@@ -103,7 +103,7 @@ if (app.Environment.IsDevelopment())
             await db.SaveChangesAsync();
         }
 
-        
+        // Reference airport, gate, aircraft, flight, and passenger data
         if (!db.Airports.Any()) 
         {
             var svo = new Airport { Id = Guid.NewGuid(), IataCode = "SVO", Name = "Шереметьево", City = "Москва", Country = "Россия", TimeZone = "Europe/Moscow" };
@@ -190,13 +190,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-
+// Authentication must run before authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 var api = app.MapGroup("/api");
 
-
+// Authentication endpoints
 api.MapAuthEndpoints(builder.Configuration);
 
 api.MapFlightsEndpoints();

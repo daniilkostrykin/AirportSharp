@@ -5,6 +5,7 @@ namespace AirportApp.model;
 /// </summary>
 public class Aircraft
 {
+    /// <summary>Уникальный идентификатор воздушного судна.</summary>
     public Guid Id { get; set; }
 
     /// <summary>Модель самолета ("Airbus A320").</summary>

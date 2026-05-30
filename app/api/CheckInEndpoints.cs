@@ -11,7 +11,7 @@ public static class CheckInEndpoints
     {
         var group = api.MapGroup("/tickets").WithTags("Tickets & Check-In");
 
-        
+        // Покупка билета доступна авторизованным пользователям
         group.MapPost("/buy", async (BuyTicketRequest request, ICheckInService checkIn, IMapper mapper) =>
         {
             try
@@ -27,7 +27,7 @@ public static class CheckInEndpoints
         .WithSummary("1. Купить билет на рейс (без выбора места)")
         .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager", "User"));
 
-        
+        // Регистрация доступна авторизованным пользователям
         group.MapPost("/checkin", async (CheckInRequest request, ICheckInService checkIn, IMapper mapper) =>
         {
             try
@@ -43,7 +43,7 @@ public static class CheckInEndpoints
         .WithSummary("2. Пройти регистрацию (назначить место)")
         .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager", "User"));
 
-        
+        // Отмена регистрации ограничена персоналом
         group.MapDelete("/checkin/{ticketId:guid}", async (Guid ticketId, ICheckInService checkIn) =>
         {
             var result = await checkIn.CancelCheckInAsync(ticketId);

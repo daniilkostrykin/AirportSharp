@@ -19,7 +19,7 @@ public static class AuthEndpoints
         var group = api.MapGroup("/auth").WithTags("Auth");
         var hasher = new PasswordHasher<User>();
 
-        
+        // Регистрация с базовой ролью User
         group.MapPost("/register", async (RegisterRequest request, AirportDbContext db) =>
         {
             var exists = await db.Users.AnyAsync(u => u.Username.ToLower() == request.Username.ToLower());
@@ -41,19 +41,19 @@ public static class AuthEndpoints
         })
         .WithSummary("Регистрация нового пользователя (роль User)");
 
-        
+        // Выдача JWT для существующего пользователя
         group.MapPost("/login", async (LoginRequest request, AirportDbContext db) =>
         {
             var user = await db.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == request.Username.ToLower());
             if (user == null) 
                 return Results.Unauthorized();
 
-            
+            // Проверка пароля через сохраненный хэш
             var verificationResult = hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verificationResult == PasswordVerificationResult.Failed)
                 return Results.Unauthorized();
 
-            
+            // Роль включается в токен для RBAC-политик
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, user.Username),

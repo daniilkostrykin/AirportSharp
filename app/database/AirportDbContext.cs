@@ -40,23 +40,23 @@ public class AirportDbContext(DbContextOptions<AirportDbContext> options) : DbCo
             entity.HasKey(x => x.Id);
             entity.Property(x => x.FlightNumber).HasMaxLength(20).IsRequired();
             
-            
+            // Аэропорт отправления не удаляется каскадно из-за истории рейсов
             entity.HasOne(f => f.OriginAirport)
                   .WithMany()
                   .HasForeignKey(f => f.OriginAirportId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            
+            // Аэропорт назначения не удаляется каскадно из-за истории рейсов
             entity.HasOne(f => f.DestinationAirport)
                   .WithMany()
                   .HasForeignKey(f => f.DestinationAirportId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            
+            // Гейт может быть снят с рейса без удаления рейса
             entity.HasOne(f => f.DepartureGate)
                   .WithMany()
                   .HasForeignKey(f => f.DepartureGateId)
-                  .OnDelete(DeleteBehavior.SetNull); 
+                  .OnDelete(DeleteBehavior.SetNull); // Удаленный гейт очищает ссылку в рейсе
 
             entity.HasOne(f => f.Aircraft)
               .WithMany()

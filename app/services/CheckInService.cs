@@ -14,7 +14,7 @@ public class CheckInService(AirportDbContext db) : ICheckInService
 
     public async Task<Ticket> RegisterPassengerAsync(CheckInRequest request)
     {
-        
+        // Регистрация требует действующий билет, рейс и профиль пассажира
         var ticket = await db.Tickets.FindAsync(request.TicketId);
         if (ticket == null) throw new ArgumentException("Билет не найден.");
         if (ticket.SeatNumber != null) throw new InvalidOperationException("Вы уже прошли регистрацию.");
@@ -32,7 +32,7 @@ public class CheckInService(AirportDbContext db) : ICheckInService
 
         string targetSeat = request.SeatNumber ?? string.Empty;
 
-        
+        // Автоназначение места при отсутствии выбора в запросе
         if (string.IsNullOrWhiteSpace(targetSeat))
         {
             var takenSeats = await db.Tickets
@@ -64,13 +64,13 @@ public class CheckInService(AirportDbContext db) : ICheckInService
                 }
             }
         }
-        
+        // Ручной выбор места ограничен купленным классом бронирования
         else
         {
             if (!flight.Aircraft!.SeatMap.Contains(targetSeat))
                 throw new ArgumentException("Такого места нет в самолете.");
 
-            
+            // Класс места должен совпадать с классом билета
             var targetSeatClass = flight.Aircraft.GetSeatClass(targetSeat);
             if (targetSeatClass != ticket.BookingClass)
             {
@@ -96,7 +96,7 @@ public class CheckInService(AirportDbContext db) : ICheckInService
             }
         }
 
-        
+        // Сохранение назначенного места и времени регистрации
         ticket.SeatNumber = targetSeat;
         ticket.CheckInTimeUtc = DateTime.UtcNow;
 

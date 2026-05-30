@@ -1,12 +1,12 @@
-
+### Base API URL
 @baseUrl = http://localhost:5254/api
 
+### ==========================================
+### БЛОК 0: АВТОРИЗАЦИЯ И РОЛИ
+### ==========================================
 
-
-
-
-
-
+### 0.1 Вход администратора
+# @name loginAdmin
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -15,11 +15,11 @@ Content-Type: application/json
   "password": "airport_2026"
 }
 
-
+### Токен администратора
 @adminToken = {{loginAdmin.response.body.token}}
 
 
-
+### 0.2 Регистрация пользователя с ролью User
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
@@ -28,8 +28,8 @@ Content-Type: application/json
   "password": "123"
 }
 
-
-
+### 0.3 Вход пользователя
+# @name loginUser
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -38,29 +38,29 @@ Content-Type: application/json
   "password": "123"
 }
 
-
+### Токен пользователя
 @userToken = {{loginUser.response.body.token}}
 
 
+### ==========================================
+### БЛОК 1: ПУБЛИЧНЫЕ ДАННЫЕ
+### ==========================================
 
-
-
-
-
-
+### 1.1 Список рейсов без авторизации
+# @name getFlights
 GET {{baseUrl}}/flights
 Accept: application/json
 
-
+### Первый рейс для тестовых сценариев
 @flightId = {{getFlights.response.body.$[0].id}}
 
 
+### ==========================================
+### БЛОК 2: ПАССАЖИРЫ
+### ==========================================
 
-
-
-
-
-
+### 2.1 Пассажир эконом-класса
+# @name createNormalUser
 POST {{baseUrl}}/passengers
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -71,11 +71,11 @@ Content-Type: application/json
   "isVip": false
 }
 
-
+### ID пассажира эконом-класса
 @normalUserId = {{createNormalUser.response.body.id}}
 
-
-
+### 2.2 Пассажир бизнес-класса без VIP-статуса
+# @name createBusinessUser
 POST {{baseUrl}}/passengers
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -86,11 +86,11 @@ Content-Type: application/json
   "isVip": false
 }
 
-
+### ID пассажира бизнес-класса
 @businessUserId = {{createBusinessUser.response.body.id}}
 
-
-
+### 2.3 VIP-пассажир бизнес-класса
+# @name createVipUser
 POST {{baseUrl}}/passengers
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -101,16 +101,16 @@ Content-Type: application/json
   "isVip": true
 }
 
-
+### ID VIP-пассажира
 @vipUserId = {{createVipUser.response.body.id}}
 
 
+### ==========================================
+### БЛОК 3: БИЛЕТЫ И ОПЛАТА
+### ==========================================
 
-
-
-
-
-
+### 3.1 Билет эконом-класса для Ивана, 8000 руб.
+# @name buyNormalTicket
 POST {{baseUrl}}/tickets/buy
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -122,11 +122,11 @@ Content-Type: application/json
   "paymentAmount": 8000
 }
 
-
+### ID билета эконом-класса
 @normalTicketId = {{buyNormalTicket.response.body.id}}
 
-
-
+### 3.2 Билет бизнес-класса для Петра, 24000 руб.
+# @name buyBusinessTicket
 POST {{baseUrl}}/tickets/buy
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -138,11 +138,11 @@ Content-Type: application/json
   "paymentAmount": 24000
 }
 
-
+### ID билета бизнес-класса
 @businessTicketId = {{buyBusinessTicket.response.body.id}}
 
-
-
+### 3.3 VIP-билет бизнес-класса для Дани, 21600 руб. с учетом скидки
+# @name buyVipTicket
 POST {{baseUrl}}/tickets/buy
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -154,16 +154,16 @@ Content-Type: application/json
   "paymentAmount": 21600
 }
 
-
+### ID VIP-билета
 @vipTicketId = {{buyVipTicket.response.body.id}}
 
 
+### ==========================================
+### БЛОК 4: РЕГИСТРАЦИЯ НА РЕЙС
+### ==========================================
 
-
-
-
-
-
+### 4.1 Запрет места бизнес-класса для билета эконом-класса
+# Ожидается: 400 Bad Request для места вне класса бронирования
 POST {{baseUrl}}/tickets/checkin
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -173,7 +173,7 @@ Content-Type: application/json
   "seatNumber": "1A"
 }
 
-
+### 4.2 Регистрация пассажира эконом-класса на место 10A
 POST {{baseUrl}}/tickets/checkin
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -183,7 +183,7 @@ Content-Type: application/json
   "seatNumber": "10A"
 }
 
-
+### 4.3 Регистрация пассажира бизнес-класса на место 1A
 POST {{baseUrl}}/tickets/checkin
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -193,7 +193,7 @@ Content-Type: application/json
   "seatNumber": "1A"
 }
 
-
+### 4.4 Приоритет VIP-пассажира для места 1A
 POST {{baseUrl}}/tickets/checkin
 Authorization: Bearer {{userToken}}
 Content-Type: application/json
@@ -204,23 +204,23 @@ Content-Type: application/json
 }
 
 
+### ==========================================
+### БЛОК 5: ПРОВЕРКА ДОСТУПА RBAC
+### ==========================================
 
-
-
-
-
-
+### 5.1 Запрет списка пассажиров для роли User
+# Ожидается: 403 Forbidden из-за недостаточных прав
 GET {{baseUrl}}/flights/{{flightId}}/passengers
 Authorization: Bearer {{userToken}}
 Accept: application/json
 
-
-
+### 5.2 Список пассажиров для администратора
+# Ожидается: 200 OK. У Дани место 1A, у Петра место null.
 GET {{baseUrl}}/flights/{{flightId}}/passengers
 Authorization: Bearer {{adminToken}}
 Accept: application/json
 
-
-
+### 5.3 Отмена регистрации Ивана администратором
+# Ожидается: место 10A освобождено
 DELETE {{baseUrl}}/tickets/checkin/{{normalTicketId}}
 Authorization: Bearer {{adminToken}}

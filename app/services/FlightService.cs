@@ -6,6 +6,9 @@ using AirportApp.model;
 
 namespace AirportApp.services;
 
+/// <summary>
+/// Сервис для работы с рейсами. Обеспечивает просмотр, создание и изменение статусов рейсов.
+/// </summary>
 public class FlightService(AirportDbContext db) : IFlightService
 {
     public async Task<IReadOnlyList<Flight>> GetAllAsync()

@@ -5,6 +5,7 @@ namespace AirportApp.model;
 /// </summary>
 public class Gate
 {
+    /// <summary>Уникальный идентификатор выхода на посадку.</summary>
     public Guid Id { get; set; }
     
     /// <summary>Внешний ключ для связи с таблицей Airports.</summary>
@@ -13,5 +14,6 @@ public class Gate
     /// <summary>Номер выхода ("14A", "B2").</summary>
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>Навигационное свойство к аэропорту, которому принадлежит выход.</summary>
     public Airport? Airport { get; set; }
 }

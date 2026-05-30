@@ -10,7 +10,7 @@ public static class PassengersEndpoints
     {
         var group = api.MapGroup("/passengers").WithTags("Passengers");
 
-        
+        // Список пассажиров доступен персоналу
         group.MapGet("/", async (IPassengerService passengers, IMapper mapper) =>
         {
             var result = await passengers.GetAllAsync();
@@ -19,7 +19,7 @@ public static class PassengersEndpoints
         .WithSummary("Список всех пассажиров (Только для персонала)")
         .RequireAuthorization(policy => policy.RequireRole("Admin", "Manager"));
 
-        
+        // Профиль пассажира может создать любой авторизованный пользователь
         group.MapPost("/", async (CreatePassengerRequest request, IPassengerService passengers, IMapper mapper) =>
         {
             var passenger = await passengers.AddAsync(request);

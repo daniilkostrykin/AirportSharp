@@ -40,5 +40,8 @@ public class Ticket
     /// </summary>
     public decimal PaidPrice { get; set; }
 
+    /// <summary>
+    /// Класс обслуживания, выбранный при покупке билета.
+    /// </summary>
     public ServiceClass BookingClass { get; set; } = ServiceClass.Economy;
 }
